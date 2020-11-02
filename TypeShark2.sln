@@ -11,6 +11,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TypeShark2.Shared", "TypeSh
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TyperShark2.Tests", "TypeShark2\Tests\TyperShark2.Tests\TyperShark2.Tests.csproj", "{39B2B8C7-FC38-4CEC-A6C5-E5BF0975FA54}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TyperShark2.IntegrationTests", "TypeShark2\Tests\TyperShark2.IntegrationTests\TyperShark2.IntegrationTests.csproj", "{BF79C801-1E9D-4528-8FF8-26F0A8BEAC72}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{39B2B8C7-FC38-4CEC-A6C5-E5BF0975FA54}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{39B2B8C7-FC38-4CEC-A6C5-E5BF0975FA54}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{39B2B8C7-FC38-4CEC-A6C5-E5BF0975FA54}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BF79C801-1E9D-4528-8FF8-26F0A8BEAC72}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BF79C801-1E9D-4528-8FF8-26F0A8BEAC72}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BF79C801-1E9D-4528-8FF8-26F0A8BEAC72}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BF79C801-1E9D-4528-8FF8-26F0A8BEAC72}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
