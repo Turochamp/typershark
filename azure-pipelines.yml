@@ -89,17 +89,16 @@ stages:
     - task: DotNetCoreCLI@2
       displayName: Dotnet publish
       inputs:
-        command: 'publish'
+        command: publish
         publishWebProjects: true
-        arguments: '--no-build --configuration $(buildConfiguration) --output app'
-        modifyOutputPath: false
+        arguments: '--configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory)'
         zipAfterPublish: false
     
     - publish: app
       artifact: app
       displayName: Publish application
 
-    - publish: typershark/TypeShark2/Server
-      artifact: server
-      displayName: Publish acceptance tests
+#    - publish: typershark/TypeShark2/Server
+#      artifact: server
+#      displayName: Publish acceptance tests
   
