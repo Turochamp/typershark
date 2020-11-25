@@ -1,0 +1,260 @@
+trigger:
+- master
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+- group: DevOpsDemo
+- name: buildConfiguration
+  value: 'Release'
+- name: isMain
+  value: $[eq(variables['Build.SourceBranch'], 'refs/heads/master')]
+  
+
+stages:
+- stage: Build
+  jobs:
+  - job:
+    displayName: Build and test
+    steps:
+    - task: DotNetCoreInstaller@1
+      displayName: Use .NET core for Sonar Cloud
+      inputs:
+        packageType: 'sdk'
+        version: '2.2.x'
+        includePreviewVersions: true
+
+    - task: SonarCloudPrepare@1
+      inputs:
+        SonarCloud: 'SonarCloud Public'
+        organization: 'turochamp'
+        scannerMode: 'MSBuild'
+        projectKey: 'DevOpsDemo-628'
+        projectName: 'DevOpsDemo'
+        projectVersion: '$(Build.BuildNumber)'
+        extraProperties: |
+          sonar.verbose=false
+          sonar.cs.opencover.reportsPaths=$(Build.SourcesDirectory)/TestResults/Coverage/coverage.opencover.xml
+
+    - task: UseDotNet@2
+      displayName: Use .net 5 for solution
+      inputs:
+        version: '5.0.x'
+        includePreviewVersions: true
+
+    - task: DotNetCoreCLI@2
+      displayName: Restore
+      inputs:
+        command: 'restore'
+        projects: '**/*.sln'
+
+    - task: DotNetCoreCLI@2
+      displayName: Build
+      inputs:
+        command: 'build'
+        projects: '**/*.sln'
+        arguments: --no-restore --configuration $(buildConfiguration)
+
+    - task: DotNetCoreCLI@2
+      displayName: 'Install ReportGenerator'
+      inputs:
+        command: custom
+        custom: tool
+        arguments: 'install --global dotnet-reportgenerator-globaltool'
+
+    - task: DotNetCoreCLI@2
+      displayName: Running unit tests
+      continueOnError: true
+      inputs:
+        command: 'test'
+        projects: '**/*.UnitTests.csproj'
+        testRunTitle: 'Unit tests'
+        arguments: '--no-build --configuration $(buildConfiguration) --logger trx /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:CoverletOutput=$(Build.SourcesDirectory)/TestResults/Coverage/'
+
+    - task: PublishCodeCoverageResults@1
+      displayName: 'Publish code coverage report'
+      inputs:
+        codeCoverageTool: 'cobertura'
+        summaryFileLocation: '$(Build.SourcesDirectory)/TestResults/Coverage/coverage.opencover.xml'
+
+    - task: SonarCloudAnalyze@1
+      displayName: Analyze code 
+
+    - task: SonarCloudPublish@1
+      displayName: Publish SonarCloud-analysis
+      inputs:
+        pollingTimeoutSec: '300'
+    
+    - task: DotNetCoreCLI@2
+      displayName: Dotnet publish
+      inputs:
+        command: 'publish'
+        publishWebProjects: true
+        arguments: '--no-build --configuration $(buildConfiguration) --output app'
+        modifyOutputPath: false
+    
+    - publish: app
+      artifact: app
+      displayName: Publish application
+    
+    - publish: deploy
+      artifact: deploy
+      displayName: Publish IaC
+
+    - publish: tests/DevOpsDemo.AcceptanceTests
+      artifact: acceptanceTests
+      displayName: Publish acceptance tests
+  
+
+- stage: UAT
+  condition: and(succeeded(), eq(variables.isMain, true))
+  jobs:
+  - deployment: 
+    displayName: Deploy UAT - Infrastructure and application
+    environment: UAT
+    variables:
+      Environment: uat
+    strategy:
+      runOnce:
+        preDeploy:
+          steps:
+          - download: current
+            artifact: deploy
+
+          - task: FileTransform@1
+            displayName: Set appsettings
+            inputs:
+              folderPath: '$(Pipeline.Workspace)/deploy'
+              fileType: 'json'
+              targetFiles: 'appsettings.json'
+
+          - task: UseDotNet@2
+            displayName: Use .NET 5
+            inputs:
+              version: '5.0.x'
+              includePreviewVersions: true
+
+          - task: Bash@3
+            displayName: Create or update infrastructure
+            name: Infrastructure
+            env:
+              PULUMI_ACCESS_TOKEN: $(PULUMI_ACCESS_TOKEN)
+              ARM_CLIENT_SECRET: $(arm.client.secret)
+              ARM_SUBSCRIPTION_ID: $(arm.subscription.id)
+              ARM_CLIENT_ID: $(arm.client.id)
+              ARM_TENANT_ID: $(arm.tenant.id)
+            inputs:
+              targetType: inline
+              workingDirectory: $(Pipeline.Workspace)/deploy
+              script: |
+                chmod +x *.sh
+                ./setup.sh
+                ./run-pulumi.sh DevOpsDemoUat
+        deploy:
+          steps:
+          - task: AzureRmWebAppDeployment@4
+            displayName: Deploy to UAT
+            inputs:
+              ConnectionType: 'AzureRM'
+              azureSubscription: 'anders-azuredevops-demo'
+              appType: 'webAppLinux'
+              WebAppName: 'devopsdemouatapp'
+              packageForLinux: '$(Pipeline.Workspace)/app/*.zip'
+  
+
+- stage: Prod
+  condition: and(succeeded(), eq(variables.isMain, true))
+  jobs:
+  - deployment: 
+    displayName: Deploy Production - Infrastructure and application
+    environment: Prod
+    variables:
+      Environment: prod
+      AppServiceTier: standard
+      AppServiceSize: s1
+      AppConfigSku: standard
+      RootUrl: 'https://devopsdemoprodapp-staging.azurewebsites.net'
+    strategy:
+      runOnce:
+        preDeploy:
+          steps:
+          - download: current
+            artifact: deploy
+
+          - task: FileTransform@1
+            displayName: Set appsettings
+            inputs:
+              folderPath: '$(Pipeline.Workspace)/deploy'
+              fileType: 'json'
+              targetFiles: 'appsettings.json'
+
+          - task: UseDotNet@2
+            displayName: Use .NET 5
+            inputs:
+              version: '5.0.x'
+              includePreviewVersions: true
+
+          - task: Bash@3
+            displayName: Create or update infrastructure
+            name: Infrastructure
+            env:
+              PULUMI_ACCESS_TOKEN: $(PULUMI_ACCESS_TOKEN)
+              ARM_CLIENT_SECRET: $(arm.client.secret)
+              ARM_SUBSCRIPTION_ID: $(arm.subscription.id)
+              ARM_CLIENT_ID: $(arm.client.id)
+              ARM_TENANT_ID: $(arm.tenant.id)
+            inputs:
+              targetType: inline
+              workingDirectory: $(Pipeline.Workspace)/deploy
+              script: |
+                chmod +x *.sh
+                ./setup.sh
+                ./run-pulumi.sh DevOpsDemoProd
+        deploy:
+          steps:
+          - task: AzureRmWebAppDeployment@4
+            displayName: Deploy to staging slot
+            inputs:
+              ConnectionType: 'AzureRM'
+              azureSubscription: 'anders-azuredevops-demo'
+              appType: 'webAppLinux'
+              WebAppName: 'devopsdemoprodapp'
+              deployToSlotOrASE: true
+              ResourceGroupName: 'devopsdemoprodrg'
+              SlotName: 'Staging'
+              packageForLinux: '$(Pipeline.Workspace)/app/*.zip'
+
+          - task: FileTransform@1
+            displayName: Set URL for tests
+            inputs:
+              folderPath: '$(Pipeline.Workspace)/acceptanceTests'
+              fileType: 'json'
+              targetFiles: 'testConfig.json'
+
+          - task: UseDotNet@2
+            displayName: Use .net 5
+            inputs:
+              version: '5.0.x'
+              includePreviewVersions: true
+
+          - task: DotNetCoreCLI@2
+            displayName: Run acceptance tests
+            continueOnError: false
+            inputs:
+              command: 'test'
+              projects: '$(Pipeline.Workspace)/**/*.AcceptanceTests.csproj'
+              testRunTitle: 'acceptance tests'
+              arguments: '--configuration $(buildConfiguration)'
+
+        on:
+          success:
+            steps:
+            - task: AzureAppServiceManage@0
+              displayName: Swap staging slot -> production
+              inputs:
+                azureSubscription: 'anders-azuredevops-demo'
+                Action: 'Swap Slots'
+                WebAppName: 'devopsdemoprodapp'
+                ResourceGroupName: 'devopsdemoprodrg'
+                SourceSlot: 'Staging'
