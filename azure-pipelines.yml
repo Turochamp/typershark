@@ -5,7 +5,7 @@ pool:
   vmImage: 'ubuntu-latest'
 
 variables:
-- group: DevOpsDemo
+- group: typershark
 - name: buildConfiguration
   value: 'Release'
 - name: isMain
