@@ -56,35 +56,35 @@ stages:
         projects: '**/*.sln'
         arguments: --no-restore --configuration $(buildConfiguration)
 
-    - task: DotNetCoreCLI@2
-      displayName: 'Install ReportGenerator'
-      inputs:
-        command: custom
-        custom: tool
-        arguments: 'install --global dotnet-reportgenerator-globaltool'
+    # - task: DotNetCoreCLI@2
+    #   displayName: 'Install ReportGenerator'
+    #   inputs:
+    #     command: custom
+    #     custom: tool
+    #     arguments: 'install --global dotnet-reportgenerator-globaltool'
 
-    - task: DotNetCoreCLI@2
-      displayName: Running unit tests
-      continueOnError: true
-      inputs:
-        command: 'test'
-        projects: '**/*.UnitTests.csproj'
-        testRunTitle: 'Unit tests'
-        arguments: '--no-build --configuration $(buildConfiguration) --logger trx /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:CoverletOutput=$(Build.SourcesDirectory)/TestResults/Coverage/'
+    # - task: DotNetCoreCLI@2
+    #   displayName: Running unit tests
+    #   continueOnError: true
+    #   inputs:
+    #     command: 'test'
+    #     projects: '**/*.UnitTests.csproj'
+    #     testRunTitle: 'Unit tests'
+    #     arguments: '--no-build --configuration $(buildConfiguration) --logger trx /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:CoverletOutput=$(Build.SourcesDirectory)/TestResults/Coverage/'
 
-    - task: PublishCodeCoverageResults@1
-      displayName: 'Publish code coverage report'
-      inputs:
-        codeCoverageTool: 'cobertura'
-        summaryFileLocation: '$(Build.SourcesDirectory)/TestResults/Coverage/coverage.opencover.xml'
+    # - task: PublishCodeCoverageResults@1
+    #   displayName: 'Publish code coverage report'
+    #   inputs:
+    #     codeCoverageTool: 'cobertura'
+    #     summaryFileLocation: '$(Build.SourcesDirectory)/TestResults/Coverage/coverage.opencover.xml'
 
-    - task: SonarCloudAnalyze@1
-      displayName: Analyze code 
+    # - task: SonarCloudAnalyze@1
+    #   displayName: Analyze code 
 
-    - task: SonarCloudPublish@1
-      displayName: Publish SonarCloud-analysis
-      inputs:
-        pollingTimeoutSec: '300'
+    # - task: SonarCloudPublish@1
+    #   displayName: Publish SonarCloud-analysis
+    #   inputs:
+    #     pollingTimeoutSec: '300'
     
     - task: DotNetCoreCLI@2
       displayName: Dotnet publish
@@ -93,6 +93,16 @@ stages:
         publishWebProjects: true
         arguments: '--configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory)'
         zipAfterPublish: false
+
+    - task: DotNetCoreCLI@2
+      displayName: 'dotnet publish'
+      inputs:
+        command: publish
+        publishWebProjects: false
+        projects: '**/*.csproj'
+        arguments: '--configuration $(BuildConfiguration) -o $(Build.ArtifactStagingDirectory)/Projects'
+        zipAfterPublish: true
+        modifyOutputPath: true
     
     - task: PublishBuildArtifacts@1
       displayName: 'Publishing Build Artifacts...'
