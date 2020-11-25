@@ -98,3 +98,8 @@ stages:
     - publish: app
       artifact: app
       displayName: Publish application
+
+    - publish: typershark/TypeShark2/Server
+      artifact: server
+      displayName: Publish acceptance tests
+  
