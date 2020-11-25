@@ -94,6 +94,9 @@ stages:
         arguments: '--configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory)'
         zipAfterPublish: false
     
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publishing Build Artifacts...'
+
 #    - publish: app
 #      artifact: app
 #      displayName: Publish application
