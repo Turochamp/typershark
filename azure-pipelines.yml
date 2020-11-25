@@ -93,6 +93,7 @@ stages:
         publishWebProjects: true
         arguments: '--no-build --configuration $(buildConfiguration) --output app'
         modifyOutputPath: false
+        zipAfterPublish: false
     
     - publish: app
       artifact: app
