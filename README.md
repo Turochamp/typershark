@@ -21,7 +21,14 @@ https://prezi.com/view/WIwhdPxztiqhe7kn9Nlj/
   https://www.pluralsight.com/courses/getting-started-blazor
 - JavaScript Interop in Blazor Applications 
   https://www.pluralsight.com/courses/javascript-interop-blazor-applications
-- Collection of awesome Blazor resources.
+- Collection of awesome Blazor resources
   https://github.com/AdrienTorris/awesome-blazor
 - Why I don't see DLLs and dotnet.wasm being loaded on a Blazor?
   https://stackoverflow.com/questions/63701813/why-i-dont-see-dlls-and-dotnet-wasm-being-loaded-on-a-blazor-webassembly-app-in
+
+# Azure Pipelines
+- Chris Sainty howto are great resource. Although...
+  https://chrissainty.com/building-blazor-apps-using-azure-pipelines/
+  https://chrissainty.com/deploying-blazor-apps-using-azure-pipelines/
+- ...AzCopy fails due to changes in version 4. This page has alternative solutions, I personally chose downgrading to version 3 
+  https://stackoverflow.com/questions/61681124/azurefilecopy-with-azure-devops-pipeline-fails-azcopy-exe-exited-with-non-zer
