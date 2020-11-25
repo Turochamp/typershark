@@ -97,11 +97,3 @@ stages:
     - publish: app
       artifact: app
       displayName: Publish application
-    
-    - publish: deploy
-      artifact: deploy
-      displayName: Publish IaC
-
-    - publish: tests/DevOpsDemo.AcceptanceTests
-      artifact: acceptanceTests
-      displayName: Publish acceptance tests
