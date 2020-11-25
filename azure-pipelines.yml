@@ -18,24 +18,24 @@ stages:
   - job:
     displayName: Build and test
     steps:
-    - task: DotNetCoreInstaller@1
-      displayName: Use .NET core for Sonar Cloud
-      inputs:
-        packageType: 'sdk'
-        version: '2.2.x'
-        includePreviewVersions: true
+    # - task: DotNetCoreInstaller@1
+    #   displayName: Use .NET core for Sonar Cloud
+    #   inputs:
+    #     packageType: 'sdk'
+    #     version: '2.2.x'
+    #     includePreviewVersions: true
 
-    - task: SonarCloudPrepare@1
-      inputs:
-        SonarCloud: 'SonarCloud'
-        organization: 'turochamp'
-        scannerMode: 'MSBuild'
-        projectKey: 'Turochamp_typershark'
-        projectName: 'Typershark'
-        projectVersion: '$(Build.BuildNumber)'
-        extraProperties: |
-          sonar.verbose=false
-          sonar.cs.opencover.reportsPaths=$(Build.SourcesDirectory)/TestResults/Coverage/coverage.opencover.xml
+    # - task: SonarCloudPrepare@1
+    #   inputs:
+    #     SonarCloud: 'SonarCloud'
+    #     organization: 'turochamp'
+    #     scannerMode: 'MSBuild'
+    #     projectKey: 'Turochamp_typershark'
+    #     projectName: 'Typershark'
+    #     projectVersion: '$(Build.BuildNumber)'
+    #     extraProperties: |
+    #       sonar.verbose=false
+    #       sonar.cs.opencover.reportsPaths=$(Build.SourcesDirectory)/TestResults/Coverage/coverage.opencover.xml
 
     - task: UseDotNet@2
       displayName: Use .net 5 for solution
@@ -86,13 +86,13 @@ stages:
     #   inputs:
     #     pollingTimeoutSec: '300'
     
-    - task: DotNetCoreCLI@2
-      displayName: Dotnet publish
-      inputs:
-        command: publish
-        publishWebProjects: true
-        arguments: '--configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory)'
-        zipAfterPublish: false
+    # - task: DotNetCoreCLI@2
+    #   displayName: Dotnet publish
+    #   inputs:
+    #     command: publish
+    #     publishWebProjects: true
+    #     arguments: '--configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory)'
+    #     zipAfterPublish: false
 
     - task: DotNetCoreCLI@2
       displayName: 'dotnet publish'
@@ -101,7 +101,7 @@ stages:
         publishWebProjects: false
         projects: '**/*.csproj'
         arguments: '--configuration $(BuildConfiguration) -o $(Build.ArtifactStagingDirectory)/Projects'
-        zipAfterPublish: true
+        zipAfterPublish: false
         modifyOutputPath: true
     
     - task: PublishBuildArtifacts@1
