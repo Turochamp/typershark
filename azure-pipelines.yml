@@ -67,7 +67,7 @@ stages:
       continueOnError: true
       inputs:
         command: 'test'
-        projects: '**/*.UnitTests.csproj'
+        projects: '**/*.Tests.csproj'
         testRunTitle: 'Unit tests'
         arguments: '--no-build --configuration $(buildConfiguration) --logger trx /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:CoverletOutput=$(Build.SourcesDirectory)/TestResults/Coverage/'
 
